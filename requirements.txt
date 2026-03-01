@@ -10,3 +10,5 @@ plotly
 python-dotenv
 pandas
 openai
+wikipedia
+ddgs

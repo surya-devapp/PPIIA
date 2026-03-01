@@ -3,7 +3,7 @@ import os
 from src.ingestion import extract_text_from_pdf, extract_text_from_url, search_bill_url
 from src.preprocessing import clean_text
 from src.analysis import analyze_bill
-from src.visualizer import create_timeline, create_impact_chart
+from src.visualizer import create_timeline
 import pandas as pd
 
 from dotenv import load_dotenv
@@ -16,6 +16,11 @@ st.set_page_config(page_title="Public Policy Insight & Impact Analyzer", layout=
 def display_analysis_results(analysis_result):
     # 1. Summary Section
     st.markdown("---")
+    
+    updated_date = analysis_result.get("updated_date", "Unknown")
+    if updated_date and updated_date != "Unknown":
+        st.info(f"📅 **Document Updated:** {updated_date}")
+        
     col1, col2 = st.columns(2)
     
     with col1:
@@ -28,7 +33,7 @@ def display_analysis_results(analysis_result):
     
     # 2. Detailed Tabs
     st.markdown("### Deep Dive")
-    tab1, tab2, tab3, tab4 = st.tabs(["Impact Analysis", "Sector Breakdown", "Timeline", "Risks"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Impact Analysis", "Sector Breakdown", "Timeline", "Risks & Benefits"])
     
     with tab1:
         st.markdown("#### Impact Over Time")
@@ -40,8 +45,12 @@ def display_analysis_results(analysis_result):
     with tab2:
         st.markdown("#### Affected Sectors")
         sectors = analysis_result.get("sectors", {})
-        # Visual
-        st.write(sectors)
+        if isinstance(sectors, dict) and sectors:
+            for sector, impact_desc in sectors.items():
+                st.markdown(f"**{sector}**")
+                st.info(impact_desc)
+        else:
+            st.write("No specific sector impact identified.")
         
     with tab3:
         st.markdown("#### Legislative History")
@@ -53,10 +62,32 @@ def display_analysis_results(analysis_result):
             st.write("No timeline data available.")
             
     with tab4:
-        st.markdown("#### Potential Risks & Controversies")
-        risks = analysis_result.get("risks", [])
-        for risk in risks:
-            st.warning(f"⚠️ {risk}")
+        col_risk, col_benefit = st.columns(2)
+        
+        with col_risk:
+            st.markdown("#### Potential Risks")
+            risks = analysis_result.get("risks", [])
+            for risk in risks:
+                if isinstance(risk, dict):
+                    level = risk.get("level", "normal").lower()
+                    desc = risk.get("description", "")
+                    if level == "large":
+                        st.error(f"🔴 **High Risk**: {desc}")
+                    elif level == "normal":
+                        st.warning(f"🟡 **Medium Risk**: {desc}")
+                    else:
+                        st.success(f"🟢 **Low Risk**: {desc}")
+                else:
+                    st.warning(f"⚠️ {risk}")
+                    
+        with col_benefit:
+            st.markdown("#### Advantages & Benefits")
+            benefits = analysis_result.get("benefits", [])
+            if benefits:
+                for benefit in benefits:
+                    st.info(f"✅ {benefit}")
+            else:
+                st.write("No specific benefits identified.")
 
 def main():
     st.title("📜 Public Policy Insight & Impact Analyzer (PPIIA)")
@@ -256,10 +287,16 @@ def main():
                                 response = f"Could not download content from {search_result['url']}"
                                 status.update(label="Failed", state="error")
                                 st.error(response)
+                                # CRITICAL FIX: The downloaded failed, erase the previous context buffer
+                                st.session_state.active_bill_text = None
+                                st.session_state.active_bill_title = None
                         else:
                             response = "I couldn't find any bill matching that query. Please try different keywords."
                             status.update(label="No results", state="error")
                             st.warning(response)
+                            # CRITICAL FIX: Erase the previous context buffer
+                            st.session_state.active_bill_text = None
+                            st.session_state.active_bill_title = None
                             
                 st.session_state.messages.append({"role": "assistant", "content": response})
             

@@ -28,18 +28,21 @@ def create_timeline(events):
     y_values = [(i % 4) + 1 for i in range(len(df))]
     
     import textwrap
-    # Wrap text to avoid extremely wide labels
-    df['wrapped_event'] = df['event'].apply(lambda x: "<br>".join(textwrap.wrap(str(x), width=30)))
+    
+    # Create wrapped text for the interactive tooltip (hover)
+    df['hover_text'] = df.apply(
+        lambda row: f"<b>{row['date'].strftime('%d %b %Y')}</b><br><br>" + "<br>".join(textwrap.wrap(str(row['event']), width=60)), 
+        axis=1
+    )
 
     # Enhanced Scatter plot
     fig = go.Figure(data=[go.Scatter(
         x=df['date'],
         y=y_values,
-        text=df['wrapped_event'],
-        mode='markers+text+lines', # Add lines to connect drops if we wanted (stem plot style), but strictly markers+text here
-        textposition="top center",
-        marker=dict(size=14, color='#1f77b4', line=dict(width=2, color='DarkSlateGrey')),
-        textfont=dict(size=14, color='black') # Larger, readable font
+        mode='markers+lines', # Removed '+text' to prevent ugly text overlap on the canvas
+        hoverinfo="text",
+        hovertext=df['hover_text'], # Show all details cleanly in the tooltip
+        marker=dict(size=16, color='#3498db', line=dict(width=2, color='#2c3e50')),
     )])
     
     # Add vertical lines (stems) for a lollipop chart effect to ground the points?

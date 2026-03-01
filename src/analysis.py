@@ -43,7 +43,9 @@ def analyze_bill(text, api_key=None, provider="gemini", model_name="gemini-1.5-f
                 3. "impact": A dictionary with keys "short_term", "medium_term", "long_term" describing the consequences.
                 4. "sectors": A dictionary where keys are Sector Names (e.g., "Technology", "Agriculture") and values are a short description of the impact (e.g., "High Impact - compliance costs").
                 5. "timeline": A list of objects with "date" (YYYY-MM-DD if possible, or string) and "event" (description) based on dates found in the text or general legislative process inference.
-                6. "risks": A list of potential risks, controversies, or challenges associated with this bill.
+                6. "risks": A list of objects detailing potential risks, controversies, or challenges. Each object MUST have "level" ("large", "normal", or "small") and "description" (the risk text).
+                7. "benefits": A list of strings detailing the advantages, benefits, or positive outcomes of this bill.
+                8. "updated_date": A string representing the most recent date of the bill's status, introduction, amendment, or publication as explicitly stated in the text. Return "Unknown" if not found.
 
                 Bill Text:
                 {text}
@@ -61,6 +63,10 @@ def analyze_bill(text, api_key=None, provider="gemini", model_name="gemini-1.5-f
 
             try:
                 result = run_llm(model_name)
+                if not result:
+                    return {"error": "AI returned an empty response."}
+                if not isinstance(result, dict):
+                    return {"error": "AI returned an invalid format instead of JSON."}
                 return result
             except Exception as e:
                 raise e
@@ -143,8 +149,13 @@ def get_mock_analysis():
             {"date": "2024-05-01", "event": "Presidential Assent"}
         ],
         "risks": [
-            "High implementation cost for small startups.",
-            "Ambiguity in 'legitimate use' exceptions.",
-            "Potential friction with international data transfer norms."
-        ]
+            {"level": "large", "description": "High implementation cost for small startups."},
+            {"level": "normal", "description": "Ambiguity in 'legitimate use' exceptions."},
+            {"level": "small", "description": "Potential friction with international data transfer norms."}
+        ],
+        "benefits": [
+            "Significantly strengthens citizen data privacy rights.",
+            "Establishes a clear legal framework for data fiduciaries."
+        ],
+        "updated_date": "August 1st, 2023"
     }
