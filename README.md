@@ -4,7 +4,7 @@ emoji: 📜
 colorFrom: blue
 colorTo: indigo
 sdk: streamlit
-sdk_version: 1.25.0
+sdk_version: 1.54.0
 app_file: app.py
 pinned: false
 ---
@@ -25,7 +25,7 @@ The Public Policy Insight & Impact Analyzer (PPIIA) is an intelligent, AI-powere
 
 The application is officially deployed and hosted live on Hugging Face Spaces. You can access and test the live application here:
 
-👉 **[PPIIA - Hugging Face Space](https://huggingface.co/spaces/suryarajesh/PPIIA)**
+👉 **[PPIIA - Hugging Face Space](https://huggingface.co/spaces/suryarajesh/PPIIA_Project)**
 
 *(Note: To use the live demo, you will need to generate and paste your own **Google Gemini API Key** into the sidebar of the application. The container build logs can be viewed [here](https://huggingface.co/spaces/suryarajesh/PPIIA?logs=container)).*
 
